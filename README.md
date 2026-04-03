@@ -1,6 +1,6 @@
 # computer-use-agent
 
-Supervised browser automation. Watch a live browser, direct it via chat. The agent uses Claude's computer use API to control the browser; you observe and intervene through the UI.
+Supervised browser automation. Watch a live browser, direct it via chat. The agent uses Claude's computer use API to control the browser.
 
 ## Stack
 
@@ -16,8 +16,6 @@ STEEL_API_KEY=...
 ANTHROPIC_API_KEY=...
 ```
 
-Get keys at [steel.dev](https://steel.dev) and [console.anthropic.com](https://console.anthropic.com).
-
 2. Start everything:
 
 ```
@@ -28,4 +26,4 @@ docker compose up
 
 ## Requirements
 
-Docker and Docker Compose. Nothing else needs to be installed on the host.
+Docker and Docker Compose. 
