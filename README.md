@@ -27,3 +27,6 @@ docker compose up
 ## Requirements
 
 Docker and Docker Compose. 
+
+Something cool:
+<img width="1919" height="983" alt="image" src="https://github.com/user-attachments/assets/76b3439c-41ab-44f1-8af7-6bc4c2052e1f" />
