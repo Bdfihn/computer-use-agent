@@ -5,8 +5,8 @@ import os
 from playwright.async_api import async_playwright, Browser, Page
 from steel import Steel
 
-DISPLAY_WIDTH = 1280
-DISPLAY_HEIGHT = 800
+DISPLAY_WIDTH = 900
+DISPLAY_HEIGHT = 600
 
 # Map xdotool-style key names (used by Claude's computer tool) to Playwright key names.
 _KEY_MAP = {
