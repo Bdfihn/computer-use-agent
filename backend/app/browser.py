@@ -58,7 +58,7 @@ class BrowserManager:
         self._playwright = await async_playwright().start()
         self._browser = await self._playwright.chromium.connect_over_cdp(cdp_url)
         context = self._browser.contexts[0]
-        self._page = context.pages[0] if context.pages else await context.new_page()
+        self._page = await context.new_page()
 
     async def take_screenshot(self) -> str:
         assert self._page is not None, "No active page — call ensure_session() first"
