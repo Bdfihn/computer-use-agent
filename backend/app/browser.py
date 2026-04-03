@@ -46,6 +46,7 @@ class BrowserManager:
         self._session = await asyncio.to_thread(
             self._client.sessions.create,
             dimensions={"width": DISPLAY_WIDTH, "height": DISPLAY_HEIGHT},
+            api_timeout=3600000,
         )
 
         cdp_url = (

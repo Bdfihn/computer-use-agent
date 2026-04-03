@@ -10,11 +10,11 @@ SLIDING_WINDOW_SIZE = 10
 SYSTEM_PROMPT = """You are controlling a Chrome browser running on Linux via Playwright.
 
 Rules:
-- To navigate to a URL: click the address bar at the top of the browser window, then type the URL and press Enter. Do not use keyboard shortcuts to focus the address bar.
+- To navigate to a URL: use the key action with "Control+l" to focus the address bar, type the full URL, then use the key action with "Enter" to navigate. You MUST press Enter — typing the URL alone does nothing.
 - Key names must be Playwright format: "Control+l", "Control+End", "ArrowDown", "Enter", etc.
 - Never use "ctrl", "super", or xdotool-style key names — they will fail.
 - The browser is already open. Do not try to launch applications or open a terminal.
-- If the screen looks blank or is loading, take a screenshot first to see the current state before acting."""
+- A blank or white screen is normal at startup — the browser is ready, just navigate to a URL."""
 
 COMPUTER_TOOL = {
     "type": "computer_20251124",
