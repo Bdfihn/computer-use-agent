@@ -23,7 +23,7 @@ class BrowserManager:
         return self._session.id if self._session else None
 
     @property
-    def viewer_url(self) -> str | None:
+    def debug_url(self) -> str | None:
         return self._session.debug_url if self._session else None
 
     async def ensure_session(self) -> None:

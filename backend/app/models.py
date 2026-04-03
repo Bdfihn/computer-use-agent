@@ -9,4 +9,4 @@ class ActivityEvent(BaseModel):
 
 class SessionInfo(BaseModel):
     session_id: str
-    viewer_url: str
+    debug_url: str
