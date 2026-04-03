@@ -8,7 +8,6 @@ from steel import Steel
 DISPLAY_WIDTH = 900
 DISPLAY_HEIGHT = 600
 
-# Map xdotool-style key names (used by Claude's computer tool) to Playwright key names.
 _KEY_MAP = {
     "ctrl": "Control", "shift": "Shift", "alt": "Alt",
     "super": "Meta", "win": "Meta",
@@ -17,9 +16,9 @@ _KEY_MAP = {
 }
 
 
-def _normalize_key(key: str) -> str:
-    parts = key.split("+")
-    return "+".join(_KEY_MAP.get(p.lower(), p) for p in parts)
+def _normalize_keys(combo: str) -> list[str]:
+    """Split a key combo like 'Control+l' into ['Control', 'l'], normalizing aliases."""
+    return [_KEY_MAP.get(p.lower(), p) for p in combo.split("+")]
 
 
 class BrowserManager:
@@ -60,44 +59,48 @@ class BrowserManager:
         context = self._browser.contexts[0]
         self._page = await context.new_page()
 
+    def _computer(self, **kwargs):
+        """Synchronous call to Steel computer API."""
+        return self._client.sessions.computer(self._session.id, **kwargs)
+
     async def take_screenshot(self) -> str:
-        assert self._page is not None, "No active page — call ensure_session() first"
-        data = await self._page.screenshot(type="png")
-        return base64.standard_b64encode(data).decode()
+        assert self._session is not None
+        resp = await asyncio.to_thread(self._computer, action="take_screenshot")
+        return resp.base64_image
 
     async def execute_action(self, action: str, tool_input: dict) -> str:
-        """Execute a computer_20251124 action. Returns base64 PNG screenshot."""
-        assert self._page is not None, "No active page — call ensure_session() first"
-        page = self._page
+        """Execute a computer_20251124 action via Steel computer API. Returns base64 PNG."""
+        assert self._session is not None
 
         if action == "screenshot":
             pass
 
         elif action == "left_click":
             x, y = tool_input["coordinate"]
-            await page.mouse.click(x, y)
+            await asyncio.to_thread(self._computer, action="click_mouse", button="left", coordinates=[x, y])
 
         elif action == "right_click":
             x, y = tool_input["coordinate"]
-            await page.mouse.click(x, y, button="right")
+            await asyncio.to_thread(self._computer, action="click_mouse", button="right", coordinates=[x, y])
 
         elif action == "double_click":
             x, y = tool_input["coordinate"]
-            await page.mouse.dblclick(x, y)
+            await asyncio.to_thread(self._computer, action="click_mouse", button="left", coordinates=[x, y], num_clicks=2)
 
         elif action == "middle_click":
             x, y = tool_input["coordinate"]
-            await page.mouse.click(x, y, button="middle")
+            await asyncio.to_thread(self._computer, action="click_mouse", button="middle", coordinates=[x, y])
 
         elif action == "type":
-            await page.keyboard.type(tool_input["text"])
+            await asyncio.to_thread(self._computer, action="type_text", text=tool_input["text"])
 
         elif action == "key":
-            await page.keyboard.press(_normalize_key(tool_input["text"]))
+            keys = _normalize_keys(tool_input["text"])
+            await asyncio.to_thread(self._computer, action="press_key", keys=keys)
 
         elif action == "mouse_move":
             x, y = tool_input["coordinate"]
-            await page.mouse.move(x, y)
+            await asyncio.to_thread(self._computer, action="move_mouse", coordinates=[x, y])
 
         elif action == "scroll":
             x, y = tool_input["coordinate"]
@@ -105,16 +108,12 @@ class BrowserManager:
             distance = tool_input.get("scroll_distance", 3)
             delta_y = distance * 100 if direction == "down" else (-distance * 100 if direction == "up" else 0)
             delta_x = distance * 100 if direction == "right" else (-distance * 100 if direction == "left" else 0)
-            await page.mouse.move(x, y)
-            await page.mouse.wheel(delta_x, delta_y)
+            await asyncio.to_thread(self._computer, action="scroll", coordinates=[x, y], delta_x=delta_x, delta_y=delta_y)
 
         elif action == "left_click_drag":
             sx, sy = tool_input["start_coordinate"]
             ex, ey = tool_input["coordinate"]
-            await page.mouse.move(sx, sy)
-            await page.mouse.down()
-            await page.mouse.move(ex, ey)
-            await page.mouse.up()
+            await asyncio.to_thread(self._computer, action="drag_mouse", path=[[sx, sy], [ex, ey]])
 
         elif action == "wait":
             await asyncio.sleep(tool_input.get("duration", 1))
@@ -122,10 +121,6 @@ class BrowserManager:
         elif action == "cursor_position":
             pass
 
-        try:
-            await page.wait_for_load_state("domcontentloaded", timeout=3000)
-        except Exception:
-            pass
         return await self.take_screenshot()
 
     async def cleanup(self) -> None:
@@ -134,7 +129,5 @@ class BrowserManager:
         if self._playwright:
             await self._playwright.stop()
         if self._session:
-            await asyncio.to_thread(
-                self._client.sessions.release, self._session.id
-            )
+            await asyncio.to_thread(self._client.sessions.release, self._session.id)
             self._session = None

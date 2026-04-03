@@ -88,7 +88,7 @@ export default function Page() {
   return (
     <div className="flex h-screen">
       <iframe
-        src={`${debugUrl}?interactive=false`}
+        src={`${debugUrl}?interactive=true`}
         className="flex-1 border-0"
         allow="clipboard-read; clipboard-write"
       />
