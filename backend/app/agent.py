@@ -7,6 +7,15 @@ MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 16000
 SLIDING_WINDOW_SIZE = 10
 
+SYSTEM_PROMPT = """You are controlling a Chrome browser running on Linux via Playwright.
+
+Rules:
+- To navigate to a URL: click the address bar at the top of the browser window, then type the URL and press Enter. Do not use keyboard shortcuts to focus the address bar.
+- Key names must be Playwright format: "Control+l", "Control+End", "ArrowDown", "Enter", etc.
+- Never use "ctrl", "super", or xdotool-style key names — they will fail.
+- The browser is already open. Do not try to launch applications or open a terminal.
+- If the screen looks blank or is loading, take a screenshot first to see the current state before acting."""
+
 COMPUTER_TOOL = {
     "type": "computer_20251124",
     "name": "computer",
@@ -51,6 +60,7 @@ async def run_agent_loop(
             response = await client.beta.messages.create(
                 model=MODEL,
                 max_tokens=MAX_TOKENS,
+                system=SYSTEM_PROMPT,
                 tools=[COMPUTER_TOOL],
                 messages=conversation,
                 betas=["computer-use-2025-11-24"],

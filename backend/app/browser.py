@@ -8,6 +8,19 @@ from steel import Steel
 DISPLAY_WIDTH = 1280
 DISPLAY_HEIGHT = 800
 
+# Map xdotool-style key names (used by Claude's computer tool) to Playwright key names.
+_KEY_MAP = {
+    "ctrl": "Control", "shift": "Shift", "alt": "Alt",
+    "super": "Meta", "win": "Meta",
+    "return": "Enter", "esc": "Escape",
+    "up": "ArrowUp", "down": "ArrowDown", "left": "ArrowLeft", "right": "ArrowRight",
+}
+
+
+def _normalize_key(key: str) -> str:
+    parts = key.split("+")
+    return "+".join(_KEY_MAP.get(p.lower(), p) for p in parts)
+
 
 class BrowserManager:
     def __init__(self, steel_api_key: str) -> None:
@@ -79,7 +92,7 @@ class BrowserManager:
             await page.keyboard.type(tool_input["text"])
 
         elif action == "key":
-            await page.keyboard.press(tool_input["text"])
+            await page.keyboard.press(_normalize_key(tool_input["text"]))
 
         elif action == "mouse_move":
             x, y = tool_input["coordinate"]
@@ -101,6 +114,9 @@ class BrowserManager:
             await page.mouse.down()
             await page.mouse.move(ex, ey)
             await page.mouse.up()
+
+        elif action == "wait":
+            await asyncio.sleep(tool_input.get("duration", 1))
 
         elif action == "cursor_position":
             pass
