@@ -1,8 +1,6 @@
 import asyncio
-import base64
-import os
 
-from playwright.async_api import async_playwright, Browser, Page
+from playwright.async_api import async_playwright, Browser
 from steel import Steel
 
 DISPLAY_WIDTH = 900
@@ -28,7 +26,6 @@ class BrowserManager:
         self._session = None
         self._playwright = None
         self._browser: Browser | None = None
-        self._page: Page | None = None
 
     @property
     def session_id(self) -> str | None:
@@ -57,7 +54,7 @@ class BrowserManager:
         self._playwright = await async_playwright().start()
         self._browser = await self._playwright.chromium.connect_over_cdp(cdp_url)
         context = self._browser.contexts[0]
-        self._page = await context.new_page()
+        await context.new_page()  # side effect: registers the page so Steel records the session in the live viewer
 
     def _computer(self, **kwargs):
         """Synchronous call to Steel computer API."""
@@ -72,8 +69,8 @@ class BrowserManager:
         """Execute a computer_20251124 action via Steel computer API. Returns base64 PNG."""
         assert self._session is not None
 
-        if action == "screenshot":
-            pass
+        if action in ("screenshot", "cursor_position"):
+            pass  # no action needed; fall through to take_screenshot()
 
         elif action == "left_click":
             x, y = tool_input["coordinate"]
@@ -117,9 +114,6 @@ class BrowserManager:
 
         elif action == "wait":
             await asyncio.sleep(tool_input.get("duration", 1))
-
-        elif action == "cursor_position":
-            pass
 
         return await self.take_screenshot()
 

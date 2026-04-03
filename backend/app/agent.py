@@ -5,7 +5,7 @@ from app.models import ActivityEvent
 
 MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 16000
-SLIDING_WINDOW_SIZE = 10
+SLIDING_WINDOW_SIZE = 10  # list entries (user + assistant pairs), each may contain multiple base64 screenshots
 
 SYSTEM_PROMPT = """You are controlling a Chrome browser running on Linux via Playwright.
 
