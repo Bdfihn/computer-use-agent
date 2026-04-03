@@ -122,6 +122,10 @@ class BrowserManager:
         elif action == "cursor_position":
             pass
 
+        try:
+            await page.wait_for_load_state("domcontentloaded", timeout=3000)
+        except Exception:
+            pass
         return await self.take_screenshot()
 
     async def cleanup(self) -> None:
